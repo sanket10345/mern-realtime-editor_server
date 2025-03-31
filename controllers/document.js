@@ -17,7 +17,8 @@ const DocumentVersion = sequelize.define('DocumentVersion', {
     document_id: { type: DataTypes.INTEGER, allowNull: false},
     //user_id: { type: DataTypes.INTEGER, allowNull: false},
     content: { type: DataTypes.TEXT, allowNull: true},
-    version_number: { type: DataTypes.INTEGER, allowNull: false},
+    version_number: { type: DataTypes.INTEGER, allowNull: false,},
+    is_current:{type:DataTypes.BOOLEAN,allowNull: false, defaultValue: 0},
     createdAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW}
   }, {
     tableName: 'document_versions', // Change this to the actual table name
@@ -76,7 +77,7 @@ exports.getDocumentVersionById = async (req, res) => {
      console.log("getDocumentVersionById------------->",id)
      const document = await DocumentVersion.findOne({
       where: {
-        document_id: id,
+        version_number: id,
         user_id:2
       },
       logging: console.log // Debug SQL query
@@ -89,6 +90,21 @@ exports.getDocumentVersionById = async (req, res) => {
      console.error(error);
      res.status(500).json({ success: false, error: error.message });
   }
+};
+
+exports.saveDocumentVersionById = async(req,res) =>{
+   try{
+      const { userId, content,documentId } = req.body;
+      const {id: versionId} = req.params
+      console.log("=------------------>",typeof (parseInt(versionId) + 1))
+      console.log("=------------------>",parseInt(versionId))
+      const document = await DocumentVersion.create({ user_id: userId, content, version_id: parseInt(versionId) + 1 });
+   res.json({ success: true});
+   }
+   catch(error){
+      console.error(error);
+      res.status(500).json({ success: false, error: error.message });      
+   }
 };
 // Update Document
 exports.updateDocument = async (req, res) => {
